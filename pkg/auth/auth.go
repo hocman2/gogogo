@@ -4,8 +4,8 @@ import (
   "errors"
   "log/slog"
   "time"
-  "backend/app/utils"
-  "backend/app/env"
+  "github.com/hocman2/gogogo/pkg/utils"
+  "github.com/hocman2/gogogo/pkg/env"
   "github.com/google/uuid"
 )
 

@@ -5,6 +5,7 @@ import (
   "fmt"
 )
 
+/// Logging helper that adds the file, line and function name for the upper call-stack location (caller)
 func AddLocation(in string) string {
   pc, file, line, ok := runtime.Caller(1); 
   if !ok {

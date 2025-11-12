@@ -1,7 +1,7 @@
 package cookies
 
 import (
-	"backend/app/env"
+	"github.com/hocman2/gogogo/pkg/env"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"

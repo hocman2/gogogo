@@ -42,15 +42,17 @@ func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 /// Inject CORS middleware at server level for all routes
-func (s *Server) WithCORS(settings *cors.CorsSettings) {
+func (s *Server) WithCORS(settings *cors.CorsSettings) *Server {
 	currMw := s.helloMw;
 	s.helloMw = func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 		corsW := cors_int.NewResponseWriter(w, settings);	
 		currMw(corsW, req, next);
 	}
+
+	return s;
 }
 
-func (s* Server) Register(routes []Route) {
+func (s* Server) Register(routes []Route) *Server {
   // ungly unreadable but we need to capture a different next each time
   // defined here for clarity, could be inline where it's used
   preservedNext := func(m Middleware, next http.HandlerFunc) http.HandlerFunc {
@@ -75,6 +77,7 @@ func (s* Server) Register(routes []Route) {
   }
 
   s.mux = mux;
+	return s;
 }
 
 /// Entry middleware that sets up some server specific stuff like the response writer and context
