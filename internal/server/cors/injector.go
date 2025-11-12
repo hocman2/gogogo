@@ -1,4 +1,4 @@
-package cors
+package cors_int
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 /// This is the response writer injected in the server when requested
 type ResponseWriter struct {
   w http.ResponseWriter
-	corsSettings cors.CorsSettings
+	corsSettings *cors.CorsSettings
   corsHeadersSet bool
 }
 

@@ -25,25 +25,29 @@ type Server struct {
   mux *http.ServeMux
 }
 
-func New(db *sql.DB) *Server {
+func New() *Server {
   s := &Server {
-		s.helloMidware,
+		nil,
     nil, 
   };
-  s.register();
+
+	s.helloMw = s.helloMidware;
   return s;
 }
 
 func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-  s.helloMidware(res, req, s.mux);
+	if s.mux != nil {
+		s.helloMw(res, req, s.mux.ServeHTTP);
+	}
 }
 
+/// Inject CORS middleware at server level for all routes
 func (s *Server) WithCORS(settings *cors.CorsSettings) {
-	m := func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		w = cors.NewResponseWriter(w, settings);	
-		next.serveHTTP(w, req);
+	currMw := s.helloMw;
+	s.helloMw = func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+		corsW := cors_int.NewResponseWriter(w, settings);	
+		currMw(corsW, req, next);
 	}
-	s.helloMw = m;
 }
 
 func (s* Server) Register(routes []Route) {
@@ -74,7 +78,7 @@ func (s* Server) Register(routes []Route) {
 }
 
 /// Entry middleware that sets up some server specific stuff like the response writer and context
-func (s *Server) helloMidware(w http.ResponseWriter, r *http.Request, next http.Handler) {
+func (s *Server) helloMidware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
   ctx := context.WithValue(r.Context(), CTXServer, s);
   r = r.WithContext(ctx);
   next.ServeHTTP(w, r); 
