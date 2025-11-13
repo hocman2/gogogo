@@ -6,6 +6,7 @@ import (
   "github.com/hocman2/gogogo/internal/server/cors"
   "context"
   "net/http"
+	"reflect"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 type UnregisteredServer struct {
 	helloMw defs.Middleware
 	autoRoutes []defs.Route
+	ctxValues map[any]any
 }
 
 type Server struct {
@@ -27,9 +29,10 @@ func New() *UnregisteredServer {
 	s := &UnregisteredServer {
 		nil,
     make([]defs.Route, 0), 
+		make(map[any]any),
   };
 
-	s.helloMw = s.helloMidware;
+	s.helloMw = s.initialMidware;
 	
 	return s;
 }
@@ -48,6 +51,19 @@ func (s *UnregisteredServer) WithCORS(settings *cors.CorsSettings) *Unregistered
 		cors.PreflightHandler(),
 		);
 
+	return s;
+}
+
+/// A value that will be attached to every request context
+func (s* UnregisteredServer) WithValue(key, value any) *UnregisteredServer {
+	if key == nil {
+		panic("Key must not be nil");
+	}
+	if !reflect.TypeOf(key).Comparable() {
+		panic("Key must be of a comparable type");
+	}
+
+	s.ctxValues[key] = value;
 	return s;
 }
 
@@ -87,10 +103,13 @@ func (s* UnregisteredServer) Register(routes []defs.Route) *Server {
 }
 
 /// Entry middleware that sets up some server specific stuff like the response writer and context
-func (s *UnregisteredServer) helloMidware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (s *UnregisteredServer) initialMidware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
   ctx := context.WithValue(r.Context(), CTXServer, s);
+	for k, v := range s.ctxValues {
+		ctx = context.WithValue(ctx, k, v);
+	}
   r = r.WithContext(ctx);
-  next.ServeHTTP(w, r); 
+  next(w, r); 
 }
 
 func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
