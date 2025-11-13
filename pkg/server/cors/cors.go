@@ -2,6 +2,8 @@ package cors
 
 import (
   "strings"
+	srv "github.com/hocman2/gogogo/pkg/server/definitions"
+	"net/http"
 );
 
 // ---------------------------------
@@ -88,4 +90,14 @@ func (c *CorsSettings) AllowCredentials() string {
   } else {
     return "false";
   }
+}
+
+func PreflightHandler() srv.Route {
+	return srv.Route {
+		"OPTIONS /",
+		[]srv.Middleware {},
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK);
+		},
+	};
 }
