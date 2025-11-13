@@ -11,9 +11,7 @@ type EnvKey string
 
 const (
   Environment          EnvKey = "ENV"
-  DBUser               EnvKey = "DB_USER"
-  DBPass               EnvKey = "DB_PASS"
-  DBName               EnvKey = "DB_NAME"
+	DBUrl								 EnvKey = "DATABASE_URL"
   ClientUrl            EnvKey = "CLIENT_URL"
   CookieSecret         EnvKey = "COOKIE_SECRET"
   CookieSid            EnvKey = "COOKIE_SID"
