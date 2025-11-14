@@ -26,6 +26,8 @@ func RandomStringB64(sz uint64) string {
 /// In case of error, it is uncertain wether the T returned value is zero-valued or not
 func ParseBodyJson[T any](req *http.Request) (T, error, int) {
   var data T;
+
+	defer req.Body.Close();
   if err := json.NewDecoder(req.Body).Decode(&data); err != nil {
     if serr, ok := err.(*json.SyntaxError); ok {
       return data, serr, http.StatusBadRequest;
