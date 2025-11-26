@@ -1,6 +1,8 @@
 package cors_int
 
 import (
+	"net"
+	"bufio"
 	"net/http"
 	"github.com/hocman2/gogogo/pkg/server/cors"
 );
@@ -68,4 +70,26 @@ func (w *ResponseWriter) Write(b []byte) (int, error) {
   }
 
   return w.w.Write(b);
+}
+
+func (w *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := w.w.(http.Hijacker); ok {
+		return h.Hijack();
+	}
+
+	return nil, nil, http.ErrNotSupported;
+}
+
+func (w *ResponseWriter) Flush() {
+if f, ok := w.w.(http.Flusher); ok {
+		f.Flush();
+	}
+}
+
+func (w *ResponseWriter) Push(target string, opts *http.PushOptions) error {
+	if p, ok := w.w.(http.Pusher); ok {
+		return p.Push(target, opts);
+	}
+
+	return http.ErrNotSupported;
 }
