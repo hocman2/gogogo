@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 );
@@ -17,19 +16,19 @@ func InitializeCookieSigner(cookieSecret []byte) {
 
 func Sign(cookie http.Cookie) (http.Cookie, error) {
 	if len(secret) == 0 {
-		return errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
+		return http.Cookie{}, errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
 	}
 	value := cookie.Value;
 	hasher := hmac.New(sha256.New, secret);
 	hasher.Write([]byte(value));
 	mac := hasher.Sum(nil);
 	cookie.Value = value + "|" + base64.URLEncoding.EncodeToString(mac);
-	return cookie;
+	return cookie, nil;
 }
 
 func Verify(cookie *http.Cookie) (*http.Cookie, error) {
 	if len(secret) == 0 {
-		return errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
+		return nil, errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
 	}
 
 	idx := strings.LastIndex(cookie.Value, "|");
