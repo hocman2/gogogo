@@ -12,15 +12,14 @@ import (
 );
 
 var secret []byte;
-func InitializeCookieSigner() error {
-	if env.Get(env.CookieSecret) == "" {
-		return errors.New(fmt.Sprintf("Missing %s environment variable, required to sign cookies.", string(env.CookieSecret)));
-	}
-	secret = []byte(env.Get(env.CookieSecret));
-	return nil;
+func InitializeCookieSigner(cookieSecret []byte) {
+	secret = cookieSecret;
 }
 
-func Sign(cookie http.Cookie) http.Cookie {
+func Sign(cookie http.Cookie) (http.Cookie, error) {
+	if len(secret) == 0 {
+		return errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
+	}
 	value := cookie.Value;
 	hasher := hmac.New(sha256.New, secret);
 	hasher.Write([]byte(value));
@@ -30,6 +29,10 @@ func Sign(cookie http.Cookie) http.Cookie {
 }
 
 func Verify(cookie *http.Cookie) (*http.Cookie, error) {
+	if len(secret) == 0 {
+		return errors.New("Secret is empty but is required to sign cookies. Make sure to call InitializeCookieSigner before using the module")
+	}
+
 	idx := strings.LastIndex(cookie.Value, "|");
 	if idx < 0 {
 		return nil, errors.New("Couldn't find value/signature separator: |");

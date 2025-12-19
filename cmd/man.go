@@ -10,19 +10,14 @@ import (
   "math/big"
   "strconv"
 
-  "github.com/hocman2/gogogo/pkg/env"
   "github.com/hocman2/gogogo/pkg/server"
 	"github.com/hocman2/gogogo/pkg/server/cors"
   "github.com/hocman2/gogogo/pkg/auth"
 )
 
 func main() {
-  env.NewEnv();
-
-  if env.IsDev() {
-    slog.SetLogLoggerLevel(slog.LevelDebug);
-    slog.Debug("🤔 Can you see this ? Debug logs are enabled for dev environments.");
-  } 
+	slog.SetLogLoggerLevel(slog.LevelDebug);
+	slog.Debug("🤔 Can you see this ? Debug logs are enabled for dev environments.");
 
   // making sure the environment allows crypto rng
   if _, err := rand.Int(rand.Reader, big.NewInt(10)); err != nil {
@@ -30,7 +25,7 @@ func main() {
   }
   slog.Info("✅ Passed test: crypto RNG");
 
-  if err := auth.InitializeTokenGenerator(); err != nil {
+  if err := auth.InitializeTokenGenerator("15m"); err != nil {
     log.Fatal("❌ Failed to initialize token generator: ", err.Error());
   }
   slog.Info("✅ Auth: token generator initialized");
@@ -45,6 +40,6 @@ func main() {
 		Register([]server.Route {});
 
 	const PORT = 9000;
-	slog.Info("⚙️ Server: started", "port", PORT, "environment", env.Get(env.Environment));
+	slog.Info("⚙️ Server: started", "port", PORT);
 	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(PORT), server));
 }

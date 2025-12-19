@@ -5,7 +5,6 @@ import (
   "log/slog"
   "time"
   "github.com/hocman2/gogogo/pkg/utils"
-  "github.com/hocman2/gogogo/pkg/env"
   "github.com/google/uuid"
 )
 
@@ -23,9 +22,9 @@ var (
 var authTokens map[Token]AuthToken = make(map[Token]AuthToken);
 var tokenDuration *time.Duration;
 
-func InitializeTokenGenerator() error {
+func InitializeTokenGenerator(tokenDurationStr string) error {
   if tokenDuration == nil {
-    dur, err := time.ParseDuration(env.Get(env.AuthTokenDuration));
+    dur, err := time.ParseDuration(tokenDurationStr);
     if err != nil {
       return err;
     }
