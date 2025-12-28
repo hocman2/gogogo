@@ -43,6 +43,8 @@ func (s *UnregisteredServer) WithCORS(settings *cors.CorsSettings) *Unregistered
 		corsW := cors_int.NewResponseWriter(w, settings)
 		if currMw != nil {
 			currMw(corsW, req, next)
+		} else {
+			next(corsW, req)
 		}
 	}
 
