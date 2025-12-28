@@ -113,7 +113,7 @@ func (s* UnregisteredServer) Register(routes []defs.Route) *Server {
 	helloMw := srv.helloMw
 	srv.helloMw = func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		if helloMw != nil {
-			initialMidware(w, r, func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+			initialMidware(w, r, func(w http.ResponseWriter, r *http.Request) {
 				helloMw(w, r, next)
 			})
 		} else {
