@@ -30,11 +30,9 @@ func New() *UnregisteredServer {
 		nil,
     make([]defs.Route, 0), 
 		make(map[any]any),
-  };
+  }
 
-	s.helloMw = s.initialMidware;
-	
-	return s;
+	return s
 }
 
 /// Inject CORS middleware at server level for all routes
@@ -42,8 +40,10 @@ func New() *UnregisteredServer {
 func (s *UnregisteredServer) WithCORS(settings *cors.CorsSettings) *UnregisteredServer {
 	currMw := s.helloMw;
 	s.helloMw = func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		corsW := cors_int.NewResponseWriter(w, settings);	
-		currMw(corsW, req, next);
+		corsW := cors_int.NewResponseWriter(w, settings)
+		if currMw != nil {
+			currMw(corsW, req, next)
+		}
 	}
 
 	s.autoRoutes = append(
@@ -96,20 +96,32 @@ func (s* UnregisteredServer) Register(routes []defs.Route) *Server {
     mux.HandleFunc(route.Pattern, handler);
   }
 
-	return &Server {
+	srv := &Server {
 		s.helloMw,
 		mux,
-	};
-}
-
-/// Entry middleware that sets up some server specific stuff like the response writer and context
-func (s *UnregisteredServer) initialMidware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-  ctx := context.WithValue(r.Context(), CTXServer, s);
-	for k, v := range s.ctxValues {
-		ctx = context.WithValue(ctx, k, v);
 	}
-  r = r.WithContext(ctx);
-  next(w, r); 
+
+	initialMidware := func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := context.WithValue(r.Context(), CTXServer, srv)
+		for k, v := range s.ctxValues {
+			ctx = context.WithValue(ctx, k, v)
+		}
+		r = r.WithContext(ctx)
+		next(w, r)
+	}
+
+	helloMw := srv.helloMw
+	srv.helloMw = func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		if helloMw != nil {
+			initialMidware(w, r, func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+				helloMw(w, r, next)
+			})
+		} else {
+			initialMidware(w, r, next)
+		}
+	}
+
+	return srv
 }
 
 func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
